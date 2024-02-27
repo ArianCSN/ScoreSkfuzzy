@@ -7,30 +7,30 @@ from tkinter import simpledialog
 from tkinter import messagebox
 
 class CustomDialog(simpledialog.Dialog):
-    def __init__(self, parent, title, fields, defaults):
-        self.fields = fields
-        self.defaults = defaults
+    def __init__(Scoring, parent, title, fields, defaults):
+        Scoring.fields = fields
+        Scoring.defaults = defaults
         super().__init__(parent, title=title)
 
-    def body(self, master):
-        self.entries = []
-        for i, field in enumerate(self.fields):
+    def body(Scoring, master):
+        Scoring.entries = []
+        for i, field in enumerate(Scoring.fields):
             tk.Label(master, text=field).grid(row=i)
             entry = tk.Entry(master)
-            if self.defaults[i] is not None:
-                entry.insert(0, str(self.defaults[i]))
+            if Scoring.defaults[i] is not None:
+                entry.insert(0, str(Scoring.defaults[i]))
                 entry.config(fg="gray")
-            entry.bind("<FocusIn>", lambda event, entry=entry: self.on_entry_click(event, entry))
+            entry.bind("<FocusIn>", lambda event, entry=entry: Scoring.on_entry_click(event, entry))
             entry.grid(row=i, column=1)
-            self.entries.append(entry)
-        self.focus_set()
-        return self.entries[0]
+            Scoring.entries.append(entry)
+        Scoring.focus_set()
+        return Scoring.entries[0]
 
-    def apply(self):
-        self.result = [float(entry.get()) if entry.get() != "" else self.defaults[i] for i, entry in enumerate(self.entries)]
+    def apply(Scoring):
+        Scoring.result = [float(entry.get()) if entry.get() != "" else Scoring.defaults[i] for i, entry in enumerate(Scoring.entries)]
 
-    def on_entry_click(self, event, entry):
-        if entry.get() == str(self.defaults[self.entries.index(entry)]):
+    def on_entry_click(Scoring, event, entry):
+        if entry.get() == str(Scoring.defaults[Scoring.entries.index(entry)]):
             entry.delete(0, "end")
             entry.config(fg="black")
 
@@ -313,6 +313,18 @@ while True :
         Scoring.input['HomeWorks'] = answer[2]
         Scoring.input['ClassActivity'] = answer[3]
     Scoring.compute()
+    if next(iter(Scoring.ctrl.consequents)).output[Scoring] is None:
+        raise ValueError("Call compute method first.")
+
+    print("=============")
+    print(" Antecedents ")
+    print("=============")
+    for v in Scoring.ctrl.antecedents:
+        print("{0:<35} = {1}".format(v.label, v.input[Scoring]))
+        for term in v.terms.values():
+            print("  - {0:<32}: {1}".format(term.label,
+                                            term.membership_value[Scoring]))
+                                            
     Score.view(sim=Scoring)
     score = Scoring.output['Score']
     rounded_score = round(score)

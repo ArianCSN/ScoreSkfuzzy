@@ -6,15 +6,10 @@ import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
 
-import tkinter as tk
-from tkinter import simpledialog
-
-import tkinter as tk
-from tkinter import simpledialog
-
 class CustomDialog(simpledialog.Dialog):
-    def __init__(self, parent, title, fields):
+    def __init__(self, parent, title, fields, defaults):
         self.fields = fields
+        self.defaults = defaults
         super().__init__(parent, title=title)
 
     def body(self, master):
@@ -22,12 +17,22 @@ class CustomDialog(simpledialog.Dialog):
         for i, field in enumerate(self.fields):
             tk.Label(master, text=field).grid(row=i)
             entry = tk.Entry(master)
+            if self.defaults[i] is not None:
+                entry.insert(0, str(self.defaults[i]))
+                entry.config(fg="gray")
+            entry.bind("<FocusIn>", lambda event, entry=entry: self.on_entry_click(event, entry))
             entry.grid(row=i, column=1)
             self.entries.append(entry)
+        self.focus_set()
         return self.entries[0]
 
     def apply(self):
-        self.result = [float(entry.get()) for entry in self.entries]
+        self.result = [float(entry.get()) if entry.get() != "" else self.defaults[i] for i, entry in enumerate(self.entries)]
+
+    def on_entry_click(self, event, entry):
+        if entry.get() == str(self.defaults[self.entries.index(entry)]):
+            entry.delete(0, "end")
+            entry.config(fg="black")
 
 
 precision=0.1
@@ -297,7 +302,11 @@ Scoring.input['ClassActivity'] = 2
 
 while True : 
     fields = ["EndTerm[0-20] : ", "MidTerm[0-20] : ", "HomeWorks[0-5] : ", "ClassActivity[0-100] :"]
-    answer = CustomDialog(None, "Enter Scores", fields).result
+    defaults = [15, 18, 3, 2]
+    root = tk.Tk()
+    root.withdraw()
+    root.focus_force()
+    answer = CustomDialog(root, "Enter Scores", fields, defaults).result
     if answer is not None:
         Scoring.input['EndTerm'] = answer[0]
         Scoring.input['MidTerm'] = answer[1]
@@ -305,7 +314,9 @@ while True :
         Scoring.input['ClassActivity'] = answer[3]
     Scoring.compute()
     Score.view(sim=Scoring)
-    answer = messagebox.askquestion("Exit", "result = {}\n Do you want to exit?".format(round(Scoring.output['Score'])))
+    score = Scoring.output['Score']
+    rounded_score = round(score)
+    answer = messagebox.askquestion("Exit", "result : {}\nrounded result : {}\n Do you want to exit?".format(score,rounded_score))
     if answer == "yes":
         exit()
     

@@ -6,20 +6,28 @@ import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
 
+import tkinter as tk
+from tkinter import simpledialog
+
+import tkinter as tk
+from tkinter import simpledialog
+
 class CustomDialog(simpledialog.Dialog):
-    def __init__(self, parent, title, prompt, default=0):
-        self.prompt = prompt
+    def __init__(self, parent, title, fields):
+        self.fields = fields
         super().__init__(parent, title=title)
 
     def body(self, master):
-        tk.Label(master, text=self.prompt).grid(row=0)
-        self.entry = tk.Entry(master, width=30)
-        self.entry.grid(row=1)
-        return self.entry
-
+        self.entries = []
+        for i, field in enumerate(self.fields):
+            tk.Label(master, text=field).grid(row=i)
+            entry = tk.Entry(master)
+            entry.grid(row=i, column=1)
+            self.entries.append(entry)
+        return self.entries[0]
 
     def apply(self):
-        self.result = self.entry.get()
+        self.result = [float(entry.get()) for entry in self.entries]
 
 
 precision=0.1
@@ -49,11 +57,13 @@ Score["C"] = fuzz.trapmf(Score.universe, [13.5, 13.9799, 15.5, 16])
 Score["B"] = fuzz.trapmf(Score.universe, [15.5, 16, 17.5, 18])
 Score["A"] = fuzz.smf(Score.universe, 17.5, 18)
 
+"""
 EndTerm.view()
 MidTerm.view()
 HomeWorks.view()
 ClassActivity.view()
 #Score.view()
+"""
 
 rule01 = ctrl.Rule(EndTerm['bad'] & MidTerm["bad"] & HomeWorks["lazy"] & ClassActivity["very lazy"] , Score["F"])
 rule02 = ctrl.Rule(EndTerm['normal'] & MidTerm["bad"] & HomeWorks["lazy"] & ClassActivity["very lazy"] , Score["F"])
@@ -278,18 +288,26 @@ Scoring_ctrl = ctrl.ControlSystem([rule01,rule02,rule03,rule04,rule05,rule06,rul
 
 Scoring = ctrl.ControlSystemSimulation(Scoring_ctrl)
 
+"""
 Scoring.input['EndTerm'] = 15
 Scoring.input['MidTerm'] = 18
 Scoring.input['HomeWorks'] = 3
 Scoring.input['ClassActivity'] = 2
+"""
 
-
-Scoring.compute()
-Score.view(sim=Scoring)
-
-while True: 
-	answer = CustomDialog(None, "Exit", "result = {} \nFor Exit enter 1".format(Scoring.output['Score'])).result
-	if answer == "1": 
-		break
+while True : 
+    fields = ["EndTerm[0-20] : ", "MidTerm[0-20] : ", "HomeWorks[0-5] : ", "ClassActivity[0-100] :"]
+    answer = CustomDialog(None, "Enter Scores", fields).result
+    if answer is not None:
+        Scoring.input['EndTerm'] = answer[0]
+        Scoring.input['MidTerm'] = answer[1]
+        Scoring.input['HomeWorks'] = answer[2]
+        Scoring.input['ClassActivity'] = answer[3]
+    Scoring.compute()
+    Score.view(sim=Scoring)
+    answer = messagebox.askquestion("Exit", "result = {}\n Do you want to exit?".format(round(Scoring.output['Score'])))
+    if answer == "yes":
+        exit()
+    
 
 

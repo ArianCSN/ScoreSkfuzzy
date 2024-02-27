@@ -5,7 +5,7 @@ import time
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
-
+ 
 class CustomDialog(simpledialog.Dialog):
     def __init__(Scoring, parent, title, fields, defaults):
         Scoring.fields = fields
@@ -35,40 +35,37 @@ class CustomDialog(simpledialog.Dialog):
             entry.config(fg="black")
 
 
-precision=0.1
-EndTerm = ctrl.Antecedent(np.arange(0, 20.0001, precision), "EndTerm")
-EndTerm["bad"] = fuzz.zmf(EndTerm.universe, 7,10)
-EndTerm["normal"] = fuzz.trapmf(EndTerm.universe, [10.01, 11, 13, 14.1])
-EndTerm["good"] = fuzz.trapmf(EndTerm.universe, [13.9, 15, 17, 18])
-EndTerm["verygood"] = fuzz.smf(EndTerm.universe, 17.9, 18.5)
-MidTerm = ctrl.Antecedent(np.arange(0, 20.0001, precision), "MidTerm")
-MidTerm["bad"] = fuzz.zmf(MidTerm.universe, 7, 10)
-MidTerm["normal"] = fuzz.trapmf(MidTerm.universe, [9.9, 11, 13, 14])
-MidTerm["good"] = fuzz.trapmf(MidTerm.universe, [13.9, 15, 17, 18])
-MidTerm["verygood"] = fuzz.smf(MidTerm.universe, 17.9, 18.5)
-HomeWorks = ctrl.Antecedent(np.arange(0, 5.0001, precision), "HomeWorks")
-HomeWorks["lazy"] = fuzz.zmf(HomeWorks.universe, 1.5, 2)
-HomeWorks["normal"] = fuzz.trapmf(HomeWorks.universe, [1.998, 2.2, 3.5, 4])
-HomeWorks["hardwork"] = fuzz.smf(HomeWorks.universe, 3.998, 4.3)
-ClassActivity = ctrl.Antecedent(np.arange(0, 100.0001, precision), "ClassActivity")
-ClassActivity["very lazy"] = fuzz.zmf(ClassActivity.universe, 20, 25)
-ClassActivity["lazy"] = fuzz.trapmf(ClassActivity.universe, [24.9, 30, 45 , 50])
-ClassActivity["normal"] = fuzz.trapmf(ClassActivity.universe, [49.9, 54 , 70, 75])
-ClassActivity["hardwork"] = fuzz.smf(ClassActivity.universe, 74.9, 80)
-Score = ctrl.Consequent(np.arange(0, 20.0001, precision), "Score")
-Score["F"] = fuzz.zmf(Score.universe, 7, 10)
-Score["D"] = fuzz.trapmf(Score.universe, [9.5, 10.4454, 13, 14])
-Score["C"] = fuzz.trapmf(Score.universe, [13.5, 13.9799, 15.5, 16])
-Score["B"] = fuzz.trapmf(Score.universe, [15.5, 16, 17.5, 18])
-Score["A"] = fuzz.smf(Score.universe, 17.5, 18)
+EndTerm = ctrl.Antecedent(np.arange(0, 20.0001, 0.1), "EndTerm")
+EndTerm["bad"] = fuzz.trimf(EndTerm.universe, [0,0,10.5])
+EndTerm["normal"] = fuzz.trapmf(EndTerm.universe, [9.5, 10, 15, 16.5])
+EndTerm["good"] = fuzz.trimf(EndTerm.universe, [15, 17, 18])
+EndTerm["verygood"] = fuzz.trimf(EndTerm.universe, [17, 20,20])
+MidTerm = ctrl.Antecedent(np.arange(0, 20.0001, 0.1), "MidTerm")
+MidTerm["bad"] = fuzz.trimf(MidTerm.universe, [0,0,10.5])
+MidTerm["normal"] = fuzz.trapmf(MidTerm.universe, [9.5, 10, 15, 16.5])
+MidTerm["good"] = fuzz.trimf(MidTerm.universe, [15, 17, 18])
+MidTerm["verygood"] = fuzz.trimf(MidTerm.universe, [17, 20,20])
+HomeWorks = ctrl.Antecedent(np.arange(0, 5.0001, 0.1), "HomeWorks")
+HomeWorks["lazy"] = fuzz.trimf(HomeWorks.universe, [0,0, 3])
+HomeWorks["normal"] = fuzz.trimf(HomeWorks.universe, [0, 2.5, 5])
+HomeWorks["hardwork"] = fuzz.trimf(HomeWorks.universe, [3,5,5])
+ClassActivity = ctrl.Antecedent(np.arange(0, 100.0001, 0.1), "ClassActivity")
+ClassActivity["very lazy"] = fuzz.trimf(ClassActivity.universe, [0, 0, 50])
+ClassActivity["lazy"] = fuzz.trimf(ClassActivity.universe, [0, 25, 75])
+ClassActivity["normal"] = fuzz.trapmf(ClassActivity.universe, [25, 50 , 75, 100])
+ClassActivity["hardwork"] = fuzz.trimf(ClassActivity.universe, [50, 100,100])
+Score = ctrl.Consequent(np.arange(0, 20.0001, 0.1), "Score" , defuzzify_method='mom')
+Score["F"] = fuzz.trimf(Score.universe, [0,0, 10])
+Score["D"] = fuzz.trapmf(Score.universe, [9, 10, 11, 12])
+Score["C"] = fuzz.trimf(Score.universe, [10, 14, 17.5])
+Score["B"] = fuzz.trapmf(Score.universe, [15, 17, 18, 20])
+Score["A"] = fuzz.trimf(Score.universe, [19, 20,20])
 
-"""
 EndTerm.view()
 MidTerm.view()
 HomeWorks.view()
 ClassActivity.view()
-#Score.view()
-"""
+Score.view()
 
 rule01 = ctrl.Rule(EndTerm['bad'] & MidTerm["bad"] & HomeWorks["lazy"] & ClassActivity["very lazy"] , Score["F"])
 rule02 = ctrl.Rule(EndTerm['normal'] & MidTerm["bad"] & HomeWorks["lazy"] & ClassActivity["very lazy"] , Score["F"])
@@ -312,23 +309,31 @@ while True :
         Scoring.input['MidTerm'] = answer[1]
         Scoring.input['HomeWorks'] = answer[2]
         Scoring.input['ClassActivity'] = answer[3]
-    Scoring.compute()
-    if next(iter(Scoring.ctrl.consequents)).output[Scoring] is None:
-        raise ValueError("Call compute method first.")
 
-    print("=============")
-    print(" Antecedents ")
-    print("=============")
+    Scoring.compute()
+    print("* Antecedents: ")
     for v in Scoring.ctrl.antecedents:
         print("{0:<35} = {1}".format(v.label, v.input[Scoring]))
         for term in v.terms.values():
             print("  - {0:<32}: {1}".format(term.label,
-                                            term.membership_value[Scoring]))
-                                            
+                                    term.membership_value[Scoring]))
+
+    str_rule = ""
+    for v in Scoring.ctrl.antecedents:
+        max = 0
+        for term in v.terms.values():
+            if term.membership_value[Scoring]>max :
+                max = term.membership_value[Scoring]
+
+        for term in v.terms.values():
+            if term.membership_value[Scoring]==max :
+                str_rule = str_rule + format(v.label) + "[" + format(term.label) + "] "
+    
     Score.view(sim=Scoring)
     score = Scoring.output['Score']
     rounded_score = round(score)
-    answer = messagebox.askquestion("Exit", "result : {}\nrounded result : {}\n Do you want to exit?".format(score,rounded_score))
+    print("selected Antecedents = ", str_rule)
+    answer = messagebox.askquestion("Exit", "rule selected : {}\nresult : {}\nrounded result : {}\n Do you want to exit?".format(str_rule,score,rounded_score))
     if answer == "yes":
         exit()
     

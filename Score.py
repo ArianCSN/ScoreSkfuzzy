@@ -1,0 +1,30 @@
+import numpy as np
+import skfuzzy as fuzz
+from skfuzzy import control as ctrl
+
+def control(precision=0.1):
+	EndTerm = ctrl.Antecedent(np.arange(0, 20, precision), "EndTerm")
+	EndTerm["bad"] = fuzz.trapmf(EndTerm.universe, [0, 3, 7, 10])
+	EndTerm["normal"] = fuzz.trapmf(EndTerm.universe, [10, 11, 13, 14])
+	EndTerm["good"] = fuzz.trapmf(EndTerm.universe, [14, 15, 17, 18])
+	EndTerm["very good"] = fuzz.trapmf(EndTerm.universe, [18, 18.5, 19.5, 20])
+	MidTerm = ctrl.Antecedent(np.arange(0, 20, precision), "MidTerm")
+	MidTerm["bad"] = fuzz.trapmf(MidTerm.universe, [0, 3, 7, 10])
+	MidTerm["normal"] = fuzz.trapmf(MidTerm.universe, [10, 11, 13, 14])
+	MidTerm["good"] = fuzz.trapmf(MidTerm.universe, [14, 15, 17, 18])
+	MidTerm["very good"] = fuzz.trapmf(MidTerm.universe, [18, 18.5, 19.5, 20])
+	HomeWorks = ctrl.Antecedent(np.arange(0, 5, precision), "HomeWorks")
+	HomeWorks["lazy"] = fuzz.trapmf(HomeWorks.universe, [0, 1, 1.5, 2])
+	HomeWorks["normal"] = fuzz.trapmf(HomeWorks.universe, [2, 2.2947, 3.5, 4])
+	HomeWorks["hardwork"] = fuzz.trapmf(HomeWorks.universe, [4, 4.3, 4.5, 5])
+	ClassActivity = ctrl.Antecedent(np.arange(0, 100, precision), "ClassActivity")
+	ClassActivity["very lazy"] = fuzz.trapmf(ClassActivity.universe, [0, 7.00867, 20, 25])
+	ClassActivity["lazy"] = fuzz.trapmf(ClassActivity.universe, [25, 30, 45.448, 50])
+	ClassActivity["normal"] = fuzz.trapmf(ClassActivity.universe, [50, 54.9855, 70, 75])
+	ClassActivity["hardwork"] = fuzz.trapmf(ClassActivity.universe, [75, 80, 92.7023, 100])
+	Score = ctrl.Consequent(np.arange(0, 20 , precision), "Score")
+	Score["F"] = fuzz.trapmf(Score.universe, [0, 3, 7, 10])
+	Score["D"] = fuzz.trapmf(Score.universe, [9.5, 10.4454, 13, 14])
+	Score["C"] = fuzz.trapmf(Score.universe, [13.5, 13.9799, 15.5, 16])
+	Score["B"] = fuzz.trapmf(Score.universe, [15.5, 16, 17.5, 18])
+	Score["A"] = fuzz.trapmf(Score.universe, [17.5, 18, 19, 20])
